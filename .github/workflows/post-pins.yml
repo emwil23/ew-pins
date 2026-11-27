@@ -4,6 +4,7 @@ on:
   schedule:
     - cron: "0 1 * * *"   # 01:00 UTC = 8 PM ET (EST): Command Center pins
     - cron: "0 13 * * *"  # 13:00 UTC = 8 AM ET (EST): Budget Bundle pins
+    - cron: "0 18 * * *"  # 18:00 UTC = 1 PM ET (EST): Book Journal pins
   workflow_dispatch:
 
 permissions:
@@ -34,12 +35,18 @@ jobs:
           PINTEREST_ACCESS_TOKEN: ${{ secrets.PINTEREST_ACCESS_TOKEN }}
         run: python .github/scripts/post_due_pins.py budget-bundle-2027/plan.csv
 
+      - name: Post due Book Journal pins
+        if: always()
+        env:
+          PINTEREST_ACCESS_TOKEN: ${{ secrets.PINTEREST_ACCESS_TOKEN }}
+        run: python .github/scripts/post_due_pins.py book-journal-2027/plan.csv
+
       - name: Save posted log
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for f in command-center-2027/posted-log.csv budget-bundle-2027/posted-log.csv; do [ -f "$f" ] && git add "$f"; done
+          for f in command-center-2027/posted-log.csv budget-bundle-2027/posted-log.csv book-journal-2027/posted-log.csv; do [ -f "$f" ] && git add "$f"; done
           if git diff --cached --quiet; then
             echo "No new pins logged"
           else
